@@ -122,19 +122,27 @@ function send() {
 
   const hoge = document.createElement('div');
   hoge.innerHTML = text;
+  hoge.classList.add('history-item');
   hoge.addEventListener('click', () => speak(text));
-  qs('#history-panel').appendChild(hoge);
+  qs('#history-output').appendChild(hoge);
 
-
+  qs('#text-input').focus();
 
 }
 
 function speak(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'ja-JP';
+  const hoge = text.match(/^[a-z]>/i)?.[0] || '';
+  const fuga = text.substr(hoge.length);
+  const utterance = new SpeechSynthesisUtterance();
   utterance.pitch = 1;
   utterance.rate = 1;
   utterance.volume = 1;
+  utterance.text = fuga;
+  if (/^e>$/i.test(hoge)) {
+    utterance.lang = 'en-US';
+  } else {
+    utterance.lang = 'ja-JP';
+  }
   speechSynthesis.speak(utterance);
 }
 
@@ -143,6 +151,7 @@ function speak(text) {
 <style>
   * {
     box-sizing: border-box;
+    overflow: hidden;
   }
   html {
     height: 100%;
@@ -162,11 +171,15 @@ function speak(text) {
     display: flex;
     flex-direction: column;
     justify-content: end;
-    flex-grow: 1;
 background: green;
+flex-grow: 1;
+}
+  #history-output {
+    height: 100%;
+    overflow-y: auto;
+    background-color: purple;
   }
   #input-panel {
-    flex-grow: 0;
     padding: .5rem 0;
   }
   #sub-container {
@@ -174,6 +187,18 @@ background: green;
     height: 100%;
 background: red;
   }
+
+
+
+  #history-panel {
+    overflow-y: auto;
+  }
+  .history-item {
+    margin: .5em 3em;
+    background-color: white;
+  }
+
+
 
   #text-input {
     height: 3lh;
@@ -186,6 +211,8 @@ background: red;
 </style>
 <div id="main-container">
   <div id="history-panel">
+    <div id="history-output">
+    </div>
   </div>
   <div id="input-panel">
     <textarea id="text-input">hoge</textarea>
