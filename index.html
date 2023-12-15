@@ -1,6 +1,196 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Second Mouth</title>
-<div>
-  <p>test</p>
+<script>
+/*
+  class Speaker {
+    #utteranceQueue;
+    constructor() {
+      this.#utteranceQueue = [];
+    }
+
+    speak(text, interrupt) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ja-JP';
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      ['end', 'error'].forEach(type => {
+        utterance.addEventListener(type, event => {
+          const utterance = this.#utteranceQueue.shift();
+          if (!(utterance)) {
+            return;
+          }
+          speechSynthesis.speak(utterance);
+        });
+      });
+      if (interrupt) {
+        speechSynthesis.cancel();
+        this.#utteranceQueue.splice(0);
+      }
+      this.#utteranceQueue.push(utterance);
+    }
+  }
+*/
+
+
+
+/*
+  const qs = document.querySelector.bind(document);
+  const speakQueue = [];
+  window.addEventListener('load', main);
+
+  function main(event) {
+    qs('#text-input').addEventListener('keydown', event => {
+      if (event.isComposing) return;
+      if (event.keyCode === 0x0D) {
+        if (event.ctrlKey) {
+          alert(1)
+        } else {
+          const text = qs('#text-input').value;
+          qs('#text-input').value = '';
+          speakQueue.push(text);
+          speak();
+        }
+      }
+    });
+
+
+
+
+    qs('#send-button').addEventListener('click', event => {
+      send();
+    });
+    // エラー対策: 最初の呼び出し時に空の配列が返ることがあるので一旦呼び出しておく
+    {
+      speechSynthesis.getVoices();
+    }
+  }
+
+  function send() {
+    const text = qs('#text-input').value;
+    qs('#text-input').value = '';
+    speak(text);
+  }
+
+  function speak(text) {
+    if (!text) return;
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ja-JP';
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+//    utterance.voice = 
+    speechSynthesis.speak(utterance);
+  }
+*/
+
+
+const qs = document.querySelector.bind(document);
+
+window.addEventListener('DOMContentLoaded', main);
+
+function main() {
+  qs('#send-button').addEventListener('click', send);
+  qs('#text-input').addEventListener('keydown', handleTextInputKeyDown);
+  window.addEventListener('beforeunload', stopSpeaking);
+}
+
+function handleTextInputKeyDown(event) {
+  if (event.isComposing) {
+    return;
+  }
+  if (event.keyCode === 0x0D) {
+    event.preventDefault();
+    if (event.ctrlKey) {
+      stopSpeaking();
+    }
+    send();
+  }
+}
+
+function stopSpeaking() {
+  speechSynthesis.cancel();
+}
+
+function send() {
+  const element = qs('#text-input');
+  const text = element.value;
+  element.value = '';
+  speak(text);
+
+  const hoge = document.createElement('div');
+  hoge.innerHTML = text;
+  hoge.addEventListener('click', () => speak(text));
+  qs('#history-panel').appendChild(hoge);
+
+
+
+}
+
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ja-JP';
+  utterance.pitch = 1;
+  utterance.rate = 1;
+  utterance.volume = 1;
+  speechSynthesis.speak(utterance);
+}
+
+</script>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    height: 100%;
+  }
+  body {
+    display: flex;
+    height: 100%;
+    margin: 0;
+  }
+  #main-container {
+    display: flex;
+    flex-direction: column;
+    width: 55%;
+    height: 100%;
+  }
+  #history-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    flex-grow: 1;
+background: green;
+  }
+  #input-panel {
+    flex-grow: 0;
+    padding: .5rem 0;
+  }
+  #sub-container {
+    width: 45%;
+    height: 100%;
+background: red;
+  }
+
+  #text-input {
+    height: 3lh;
+    resize: none;
+  }
+</style>
+
+
+<style>
+</style>
+<div id="main-container">
+  <div id="history-panel">
+  </div>
+  <div id="input-panel">
+    <textarea id="text-input">hoge</textarea>
+    <button id="send-button">Send</button>
+  </div>
+</div>
+<div id="sub-container">
 </div>
