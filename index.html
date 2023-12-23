@@ -2,91 +2,6 @@
 <meta charset="utf-8">
 <title>Second Mouth</title>
 <script>
-/*
-  class Speaker {
-    #utteranceQueue;
-    constructor() {
-      this.#utteranceQueue = [];
-    }
-
-    speak(text, interrupt) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ja-JP';
-      utterance.rate = 1;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-      ['end', 'error'].forEach(type => {
-        utterance.addEventListener(type, event => {
-          const utterance = this.#utteranceQueue.shift();
-          if (!(utterance)) {
-            return;
-          }
-          speechSynthesis.speak(utterance);
-        });
-      });
-      if (interrupt) {
-        speechSynthesis.cancel();
-        this.#utteranceQueue.splice(0);
-      }
-      this.#utteranceQueue.push(utterance);
-    }
-  }
-*/
-
-
-
-/*
-  const qs = document.querySelector.bind(document);
-  const speakQueue = [];
-  window.addEventListener('load', main);
-
-  function main(event) {
-    qs('#text-input').addEventListener('keydown', event => {
-      if (event.isComposing) return;
-      if (event.keyCode === 0x0D) {
-        if (event.ctrlKey) {
-          alert(1)
-        } else {
-          const text = qs('#text-input').value;
-          qs('#text-input').value = '';
-          speakQueue.push(text);
-          speak();
-        }
-      }
-    });
-
-
-
-
-    qs('#send-button').addEventListener('click', event => {
-      send();
-    });
-    // エラー対策: 最初の呼び出し時に空の配列が返ることがあるので一旦呼び出しておく
-    {
-      speechSynthesis.getVoices();
-    }
-  }
-
-  function send() {
-    const text = qs('#text-input').value;
-    qs('#text-input').value = '';
-    speak(text);
-  }
-
-  function speak(text) {
-    if (!text) return;
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ja-JP';
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    utterance.volume = 1;
-//    utterance.voice = 
-    speechSynthesis.speak(utterance);
-  }
-*/
-
-
 const qs = document.querySelector.bind(document);
 
 window.addEventListener('DOMContentLoaded', main);
@@ -135,7 +50,45 @@ function send() {
 
 }
 
+
 function speak(text) {
+  text = text.replace(/(?:^|\s+)(@[0-9A-Z]+)(?=\s|$)/gi, '|$1|');
+  text = text.replace(/(?:^|\s+)(&[0-9A-Z]+)(?=\s|$)/gi, '|$1|');
+  const textParts = text.split('|');
+  let lang = 'ja-JP';
+  textParts.forEach(textPart => {
+    if (/^@[0-9A-Z]+$/i.test(textPart)) {
+      const code = textPart.slice(1).toLowerCase();
+      if (code === 'en') {
+        lang = 'en-US';
+      } else if (code === 'ja') {
+        lang = 'ja-JP';
+      }
+    } else if (/^&[0-9A-Z]+$/i.test(textPart)) {
+      const code = textPart.slice(1).toLowerCase();
+    } else {
+      piyo(textPart, lang);
+    }
+  });
+}
+
+function getReference(hoge) {
+  hoge = hoge.toLowerCase();
+
+}
+
+function piyo(text, lang) {
+  const utterance = new SpeechSynthesisUtterance();
+  utterance.pitch = 1;
+  utterance.rate = 1;
+  utterance.volume = 1;
+  utterance.lang = lang;
+  utterance.voice = getVoice(utterance.lang);
+  utterance.text = text;
+  speechSynthesis.speak(utterance);
+}
+
+function speak2(text) {
   text = adjustText(text);
   const hoge = text.match(/^[a-z]>/i)?.[0] || '';
   const fuga = text.substr(hoge.length);
@@ -206,6 +159,7 @@ background-color: blue;
 */
   #history-output {
     --hhhh: 8px;
+    counter-reset: history-item-index;
     display: flex;
     flex-flow: column nowrap;
     height: 100%;
@@ -222,9 +176,9 @@ background-color: blue;
     margin-bottom: var(--hhhh);
     content: "";
   }
-
   .history-item {
     --border-width: 2px;
+    counter-increment: history-item-index;
     --border-color: gray;
     display: block;
     flex-shrink: 0;
@@ -235,6 +189,15 @@ background-color: blue;
     border-radius: 10px;
     border: var(--border-width) solid var(--border-color);
     background-color: white;
+  }
+  .history-item::before {
+    display: block;
+    position: absolute;
+    top: -10px;
+    left: 10px;
+    height: 10px;
+    background-color: red;
+    content: "h" counter(history-item-index);
   }
   .history-item::after {
     --width: var(--hhhh);
